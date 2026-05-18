@@ -79,10 +79,11 @@ class JwtServiceTest {
         Map<String, Object> extra = Map.of("role", "CITIZEN", "userId", 42);
         String token = jwtService.generateToken(extra, userDetails);
 
-        assertThat(jwtService.extractClaim(token, claims -> claims.get("role", String.class)))
-                .isEqualTo("CITIZEN");
-        assertThat(jwtService.extractClaim(token, claims -> claims.get("userId", Integer.class)))
-                .isEqualTo(42);
+        String role = jwtService.extractClaim(token, claims -> claims.get("role", String.class));
+        Integer userId = jwtService.extractClaim(token, claims -> claims.get("userId", Integer.class));
+
+        assertThat(role).isEqualTo("CITIZEN");
+        assertThat(userId).isEqualTo(42);
     }
 
     // -------------------------------------------------------------------------
@@ -141,7 +142,8 @@ class JwtServiceTest {
     @DisplayName("extractClaim can retrieve the issuedAt date")
     void extractClaim_retrievesIssuedAt() {
         String token = jwtService.generateToken(userDetails);
-        assertThat(jwtService.extractClaim(token, claims -> claims.getIssuedAt()))
+        java.util.Date issuedAt = jwtService.extractClaim(token, claims -> claims.getIssuedAt());
+        assertThat(issuedAt)
                 .isNotNull()
                 .isBeforeOrEqualTo(new java.util.Date());
     }
@@ -150,7 +152,8 @@ class JwtServiceTest {
     @DisplayName("extractClaim can retrieve the expiration date")
     void extractClaim_retrievesExpiration() {
         String token = jwtService.generateToken(userDetails);
-        assertThat(jwtService.extractClaim(token, claims -> claims.getExpiration()))
+        java.util.Date expiration = jwtService.extractClaim(token, claims -> claims.getExpiration());
+        assertThat(expiration)
                 .isNotNull()
                 .isAfter(new java.util.Date());
     }
