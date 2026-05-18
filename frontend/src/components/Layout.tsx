@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Leaf, LogOut, Bell } from 'lucide-react'
+import { Leaf, LogOut } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 
 interface NavItem {

@@ -20,8 +20,8 @@ export interface LoginPayload {
 
 export const authApi = {
   register: (data: RegisterPayload) =>
-    api.post<AuthResponse>('/auth/register', data).then((r) => r.data),
+    api.post<AuthResponse>('/auth/register', data).then((r: { data: any }) => r.data),
 
   login: (data: LoginPayload) =>
-    api.post<AuthResponse>('/auth/login', data).then((r) => r.data),
+    api.post<AuthResponse>('/auth/login', data).then((r: { data: any }) => r.data),
 }
