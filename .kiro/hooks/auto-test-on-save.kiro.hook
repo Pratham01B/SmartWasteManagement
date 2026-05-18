@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto Test Generator",
+  "description": "When any Java file in backend/src/main is saved, automatically generate or update the corresponding JUnit 5 unit test in backend/src/test using Mockito for mocks. Follows ClassNameTest.java naming convention and tests all public methods.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "backend/src/main/**/*.java"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A Java file was just saved in backend/src/main. Check which file was modified and automatically generate or update the corresponding unit test file in backend/src/test following these rules:\n- Use JUnit 5 (@Test, @ExtendWith(MockitoExtension.class))\n- Test all public methods with meaningful assertions\n- Use Mockito for mocking dependencies (@Mock, @InjectMocks)\n- Follow naming convention: ClassNameTest.java in the matching package under src/test\n- If the test file already exists, only add tests for new/changed methods\n- Do not overwrite existing passing tests"
+  }
+}
