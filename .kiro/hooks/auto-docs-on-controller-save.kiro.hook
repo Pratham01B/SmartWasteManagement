@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto API Documentation",
+  "description": "When any REST controller file is saved, automatically update README.md with the new or changed API endpoint details including path, method, request/response format, auth requirement, and which user role can access it.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "backend/src/main/java/com/smartwaste/controller/**/*.java"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A REST controller file was just saved. Read the controller file and update the API Endpoints section in README.md with any new or changed endpoints. For each endpoint include:\n- HTTP method and path (e.g. POST /api/complaints)\n- One-line description of what it does\n- Which user role(s) can access it (ADMIN / CITIZEN / WORKER / RECYCLER or PUBLIC)\n- Whether JWT authentication is required\nKeep the README table format consistent with what already exists. Only add or update rows — do not remove existing documented endpoints."
+  }
+}

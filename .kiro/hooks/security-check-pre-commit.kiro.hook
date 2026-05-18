@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Security Check — Pre-Commit",
+  "description": "Before every git commit, scan all staged files for hardcoded secrets — passwords, API keys, tokens, database credentials, or any sensitive data. Warn and block the commit if anything is found, suggesting environment variables as the fix.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": [
+      "shell"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A shell command is about to run. If it is a git commit command, perform a security scan before allowing it to proceed:\n\n1. Run: git diff --cached --name-only to get all staged files\n2. Search staged file contents for these patterns:\n   - Hardcoded passwords (password=, passwd=, pwd= followed by a non-placeholder value)\n   - API keys or tokens (api_key, apikey, secret_key, token= with actual values)\n   - Database credentials (DATABASE_PASSWORD, DB_PASS with real values, not ${...} placeholders)\n   - Private keys (-----BEGIN PRIVATE KEY-----, -----BEGIN RSA PRIVATE KEY-----)\n   - AWS/cloud credentials (AKIA, aws_secret_access_key)\n   - Any .env files accidentally staged\n\n3. If sensitive data is found:\n   - Show a clear WARNING listing each file and the type of issue\n   - State: \"COMMIT BLOCKED — sensitive data detected\"\n   - Suggest moving the value to .env and referencing it as an environment variable\n   - Do NOT proceed with the commit tool call\n\n4. If no issues found, state \"Security check passed\" and allow the commit to proceed normally."
+  }
+}
