@@ -3,9 +3,9 @@ spring:
     name: smartwaste-backend
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/smartwaste}
+    url: ${DATABASE_URL:jdbc:postgresql://db.grrtfxieugqfwigskfwl.supabase.co:5432/postgres}
     username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:password}
+    password: ${DATABASE_PASSWORD:Sm@rtW@ste1331}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10

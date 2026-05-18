@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../store/authStore'
 
 const api = axios.create({
@@ -7,7 +7,7 @@ const api = axios.create({
 })
 
 // Attach JWT to every request
-api.interceptors.request.use((config) => {
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().accessToken
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
 // Handle 401 — clear auth and redirect to login
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (error: AxiosError) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().clearAuth()
       window.location.href = '/login'
