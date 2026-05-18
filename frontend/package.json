@@ -1,6 +1,7 @@
 {
   "name": "smartwaste-frontend",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@tanstack/react-query": "^5.40.0",
