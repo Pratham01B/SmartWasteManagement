@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { AlertCircle, CheckCircle, Clock, Plus, Star } from 'lucide-react'
+import { AlertCircle, CheckCircle, Clock, Plus, Star, ChevronRight } from 'lucide-react'
 import { complaintsApi } from '../../api/complaints'
 import { useAuthStore } from '../../store/authStore'
 import { StatusBadge } from '../../components/StatusBadge'
@@ -18,6 +18,8 @@ export default function CitizenDashboard() {
   const pending = complaints.filter((c: Complaint) => c.status === 'PENDING').length
   const inProgress = complaints.filter((c: Complaint) => ['ASSIGNED', 'IN_PROGRESS'].includes(c.status)).length
   const resolved = complaints.filter((c: Complaint) => c.status === 'RESOLVED').length
+  // Points that will be earned once active complaints are resolved
+  const pendingPoints = (pending + inProgress) * 10
 
   return (
     <div className="space-y-6">
@@ -36,15 +38,32 @@ export default function CitizenDashboard() {
         </Link>
       </div>
 
-      {/* Reward points banner */}
-      <div className="bg-gradient-to-r from-amber-400 to-orange-400 rounded-xl p-5 text-white flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium opacity-90">Your Reward Points</p>
-          <p className="text-4xl font-bold mt-1">{user?.rewardPoints ?? 0}</p>
-          <p className="text-xs opacity-80 mt-1">Earn 10 pts for every resolved complaint</p>
+      {/* Reward points banner — links to full rewards page */}
+      <Link
+        to="/citizen/rewards"
+        className="block bg-gradient-to-r from-amber-400 to-orange-400 rounded-xl p-5 text-white hover:opacity-95 transition"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium opacity-90">Your Reward Points</p>
+            <p className="text-4xl font-bold mt-1">{user?.rewardPoints ?? 0}</p>
+            <div className="flex items-center gap-3 mt-2">
+              <p className="text-xs opacity-80">+10 pts per resolved complaint</p>
+              {pendingPoints > 0 && (
+                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                  ~{pendingPoints} pts pending
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <Star className="w-12 h-12 opacity-20" />
+            <span className="flex items-center gap-1 text-xs font-medium opacity-80">
+              View Rewards <ChevronRight className="w-3 h-3" />
+            </span>
+          </div>
         </div>
-        <Star className="w-16 h-16 opacity-20" />
-      </div>
+      </Link>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
