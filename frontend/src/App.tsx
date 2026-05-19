@@ -25,6 +25,10 @@ import WorkerRoutesPage from './pages/worker/WorkerRoutesPage'
 // Recycler pages
 import RecyclerDashboard from './pages/recycler/RecyclerDashboard'
 
+// Ye imports add karo
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+
 // Placeholder for pages not yet implemented
 const Placeholder = ({ title }: { title: string }) => (
   <div className="flex items-center justify-center h-64 text-gray-400 text-lg">{title} — Coming soon</div>
@@ -45,6 +49,9 @@ export default function App() {
         element={isAuthenticated ? <Navigate to={`/${user?.role.toLowerCase()}/dashboard`} /> : <RegisterPage />}
       />
       <Route path="/unauthorized" element={<Placeholder title="403 — Unauthorized" />} />
+
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Admin routes */}
       <Route
