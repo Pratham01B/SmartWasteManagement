@@ -8,6 +8,7 @@ com\smartwaste\entity\UserTest$GetFullName.class
 com\smartwaste\model\PasswordResetTokenTest.class
 com\smartwaste\service\ComplaintServiceTest$UpdateStatus.class
 com\smartwaste\service\AuthServiceTest$SendOtp.class
+com\smartwaste\entity\MarketplaceListingTest.class
 com\smartwaste\entity\PasswordResetTokenTest$EqualityAndHashCode.class
 com\smartwaste\entity\PasswordResetTokenTest$Setters.class
 com\smartwaste\repository\OtpRepositoryTest.class
@@ -16,6 +17,7 @@ com\smartwaste\entity\UserTest$GetAuthorities.class
 com\smartwaste\entity\PasswordResetTokenTest$NoArgsConstructorTest.class
 com\smartwaste\entity\UserTest.class
 com\smartwaste\entity\PasswordResetTokenTest$AllArgsConstructorTest.class
+com\smartwaste\repository\MarketplaceRepositoryTest.class
 com\smartwaste\service\ComplaintServiceTest$AssignComplaint.class
 com\smartwaste\model\PasswordResetTokenTest$AllArgsConstructor.class
 com\smartwaste\model\PasswordResetTokenTest$Setters.class
@@ -45,5 +47,6 @@ com\smartwaste\exception\ResourceNotFoundExceptionTest.class
 com\smartwaste\repository\PasswordResetTokenRepositoryTest.class
 com\smartwaste\entity\PasswordResetTokenTest$BuilderConstruction.class
 com\smartwaste\service\AuthServiceTest$ResetPassword.class
+com\smartwaste\dto\worker\WorkerResponseTest.class
 com\smartwaste\entity\UserTest$BuilderDefaults.class
 com\smartwaste\service\EmailServiceTest.class
