@@ -40,7 +40,6 @@ export default function NewComplaintPage() {
 
   const lat = watch('latitude')
   const lng = watch('longitude')
-  const imageUrl = watch('imageUrl')
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
