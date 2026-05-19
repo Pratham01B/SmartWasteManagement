@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.smartwaste.security.JwtServiceTest
--------------------------------------------------------------------------------
-Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.401 s -- in com.smartwaste.security.JwtServiceTest

@@ -46,3 +46,18 @@ logging:
   level:
     com.smartwaste: DEBUG
     org.springframework.security: INFO
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: prathambothara1@gmail.com
+    password: qude bkar nyuc wxwi    # Gmail App Password (16 chars)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: false
