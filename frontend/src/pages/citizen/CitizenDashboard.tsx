@@ -2,16 +2,29 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { AlertCircle, CheckCircle, Clock, Plus, Star, ChevronRight } from 'lucide-react'
 import { complaintsApi } from '../../api/complaints'
+import { authApi } from '../../api/auth'
 import { useAuthStore } from '../../store/authStore'
 import { StatusBadge } from '../../components/StatusBadge'
 import type { Complaint } from '../../types'
 
 export default function CitizenDashboard() {
   const user = useAuthStore((s) => s.user)
+  const updateRewardPoints = useAuthStore((s) => s.updateRewardPoints)
 
   const { data, isLoading } = useQuery({
     queryKey: ['my-complaints', 0],
     queryFn: () => complaintsApi.getMy(0),
+  })
+
+  // Poll /auth/me every 30s to keep reward points fresh after resolutions
+  useQuery({
+    queryKey: ['my-profile'],
+    queryFn: async () => {
+      const profile = await authApi.getMe()
+      updateRewardPoints(profile.rewardPoints)
+      return profile
+    },
+    refetchInterval: 30_000,
   })
 
   const complaints = data?.content ?? []
