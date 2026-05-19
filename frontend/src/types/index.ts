@@ -12,6 +12,18 @@ export interface User {
   rewardPoints: number
 }
 
+export interface UserProfile {
+  userId: number
+  email: string
+  fullName: string
+  phoneNumber?: string
+  city?: string
+  pincode?: string
+  role: Role
+  rewardPoints: number
+  createdAt: string
+}
+
 export interface AuthResponse {
   accessToken: string
   refreshToken: string

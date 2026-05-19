@@ -1,5 +1,5 @@
 import api from './axios'
-import type { AuthResponse } from '../types'
+import type { AuthResponse, UserProfile } from '../types'
 
 export interface RegisterPayload {
   firstName: string
@@ -24,4 +24,7 @@ export const authApi = {
 
   login: (data: LoginPayload) =>
     api.post<AuthResponse>('/auth/login', data).then((r: { data: any }) => r.data),
+
+  getMe: () =>
+    api.get<UserProfile>('/auth/me').then((r) => r.data),
 }
