@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { Leaf } from 'lucide-react'
-import axios from 'axios'
+import { authApi } from '../api/auth'
 
 interface FormData {
   newPassword: string
@@ -25,10 +25,7 @@ export default function ResetPasswordPage() {
     }
     setLoading(true)
     try {
-      await axios.post('http://localhost:8080/auth/reset-password', {
-        token,
-        newPassword: data.newPassword,
-      })
+      await authApi.resetPassword(token!, data.newPassword)
       toast.success('Password reset successfully!')
       navigate('/login')
     } catch (err: any) {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { Leaf } from 'lucide-react'
-import axios from 'axios'
+import { authApi } from '../api/auth'
 
 interface FormData {
   email: string
@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: FormData) => {
     setLoading(true)
     try {
-      await axios.post('http://localhost:8080/auth/forgot-password', data)
+      await authApi.forgotPassword(data.email)
       setSent(true)
       toast.success('Reset link sent! Check your email.')
     } catch (err: any) {

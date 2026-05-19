@@ -2,6 +2,7 @@ E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwa
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\entity\UserTest.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\exception\GlobalExceptionHandlerTest.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\controller\AuthControllerTest.java
+E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\repository\PasswordResetTokenRepositoryTest.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\security\JwtServiceTest.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\entity\ComplaintTest.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\repository\ComplaintRepositoryTest.java

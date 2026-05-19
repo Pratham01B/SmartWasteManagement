@@ -29,6 +29,20 @@ spring:
     init:
       mode: never
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:prathambothara1@gmail.com}
+    password: ${MAIL_PASSWORD:qude bkar nyuc wxwi}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: false
+
 server:
   port: 8080
   servlet:
@@ -39,6 +53,9 @@ jwt:
   expiration: 86400000
   refresh-expiration: 604800000
 
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
 
@@ -46,18 +63,3 @@ logging:
   level:
     com.smartwaste: DEBUG
     org.springframework.security: INFO
-
-spring:
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: prathambothara1@gmail.com
-    password: qude bkar nyuc wxwi    # Gmail App Password (16 chars)
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-        debug: false

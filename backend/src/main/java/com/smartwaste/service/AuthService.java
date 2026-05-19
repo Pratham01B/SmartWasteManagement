@@ -24,6 +24,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+
 /**
  * Service handling user registration and login.
  */
@@ -38,6 +40,9 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
     private final OtpRepository otpRepository;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     /*
      * Registers a new user and returns JWT tokens.
@@ -121,6 +126,7 @@ public class AuthService {
     }
 
     // ── OTP SEND ──────────────────────────────────────────
+    @Transactional
     public void sendOtp(String email) {
         // Purane OTP delete karo
         otpRepository.deleteByEmail(email);
@@ -183,6 +189,7 @@ public class AuthService {
      // ========================
 
     // ── FORGOT PASSWORD ───────────────────────────────────
+    @Transactional
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -201,11 +208,12 @@ public class AuthService {
 
         passwordResetTokenRepository.save(resetToken);
 
-        String resetLink = "http://localhost:5173/reset-password?token=" + token;
+        String resetLink = frontendUrl + "/reset-password?token=" + token;
         emailService.sendPasswordResetLink(email, resetLink);
     }
 
     // ── RESET PASSWORD ────────────────────────────────────
+    @Transactional
     public void resetPassword(String token, String newPassword) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid reset token"));
