@@ -26,6 +26,7 @@ import WorkerRoutesPage from './pages/worker/WorkerRoutesPage'
 
 // Recycler pages
 import RecyclerDashboard from './pages/recycler/RecyclerDashboard'
+import RecyclerMarketplacePage from './pages/recycler/RecyclerMarketplacePage'
 
 // Ye imports add karo
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -113,7 +114,7 @@ export default function App() {
             <Layout>
               <Routes>
                 <Route path="dashboard" element={<RecyclerDashboard />} />
-                <Route path="marketplace" element={<Placeholder title="Marketplace" />} />
+                <Route path="marketplace" element={<RecyclerMarketplacePage />} />
               </Routes>
             </Layout>
           </ProtectedRoute>

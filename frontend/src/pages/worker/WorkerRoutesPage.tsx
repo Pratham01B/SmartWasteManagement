@@ -50,8 +50,8 @@ export default function WorkerRoutesPage() {
     let map: any
 
     const initMap = async () => {
-      const L = (await import('leaflet')).default
-      await import('leaflet/dist/leaflet.css')
+      const L = await import('leaflet')
+      await import('leaflet/dist/leaflet.css' as any)
 
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
@@ -85,7 +85,7 @@ export default function WorkerRoutesPage() {
     if (!mapInstanceRef.current || !selectedRoute) return
 
     const plotRoute = async () => {
-      const L = (await import('leaflet')).default
+      const L = await import('leaflet')
       const map = mapInstanceRef.current
 
       // Clear existing layers except tile layer

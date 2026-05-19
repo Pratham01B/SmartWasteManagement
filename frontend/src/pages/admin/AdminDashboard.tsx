@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['dashboard-stats'],
     queryFn: () => api.get('/analytics/dashboard').then((r) => r.data),
-    refetchInterval: 30_000,
+    refetchInterval: 15_000,   // refresh every 15s — picks up worker resolutions live
   })
 
   if (isLoading) {
