@@ -3,14 +3,16 @@ spring:
     name: smartwaste-backend
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require}
+    url: ${DATABASE_URL:jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0}
     username: ${DATABASE_USERNAME:postgres.grrtfxieugqfwigskfwl}
     password: ${DATABASE_PASSWORD:Sm@rtW@ste1331}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: 5
       minimum-idle: 2
       connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
       initialization-fail-timeout: -1
 
   jpa:
