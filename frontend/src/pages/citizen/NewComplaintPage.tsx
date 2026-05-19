@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
-import { MapPin, Loader2 } from 'lucide-react'
+import { MapPin, Loader2, Upload, X } from 'lucide-react'
 import { complaintsApi } from '../../api/complaints'
+import { supabase } from '../../supabaseClient'  // ← path apne hisaab se set karein
 import type { WasteType, Priority } from '../../types'
 
 interface FormData {
@@ -26,6 +27,8 @@ export default function NewComplaintPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [locating, setLocating] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const {
     register,
@@ -37,6 +40,7 @@ export default function NewComplaintPage() {
 
   const lat = watch('latitude')
   const lng = watch('longitude')
+  const imageUrl = watch('imageUrl')
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
@@ -79,6 +83,59 @@ export default function NewComplaintPage() {
         setLocating(false)
       }
     )
+  }
+
+  // ✅ Image Upload Function
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // File size check — max 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size 5MB se kam honi chahiye')
+      return
+    }
+
+    // Sirf image files allow karein
+    if (!file.type.startsWith('image/')) {
+      toast.error('Sirf image files upload kar sakte hain')
+      return
+    }
+
+    setUploadingImage(true)
+
+    try {
+      // Unique file name banayein
+      const fileExt = file.name.split('.').pop()
+      const fileName = `complaint_${Date.now()}.${fileExt}`
+
+      // Supabase Storage mein upload karein
+      const { data, error } = await supabase.storage
+        .from('complaint-images')   // ← Supabase mein bucket ka naam
+        .upload(fileName, file, { upsert: false })
+
+      if (error) throw error
+
+      // Public URL lein
+      const { data: urlData } = supabase.storage
+        .from('complaint-images')
+        .getPublicUrl(data.path)
+
+      setValue('imageUrl', urlData.publicUrl)
+      setImagePreview(urlData.publicUrl)
+      toast.success('Image successfully upload ho gayi!')
+
+    } catch (err: any) {
+      toast.error('Image upload fail hui: ' + (err.message ?? 'Unknown error'))
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  // ✅ Image Remove Function
+  const handleRemoveImage = () => {
+    setValue('imageUrl', '')
+    setImagePreview(null)
   }
 
   return (
@@ -131,7 +188,7 @@ export default function NewComplaintPage() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
           <input
             {...register('pincode', { pattern: { value: /^\d{6}$/, message: 'Enter a valid 6-digit pincode' } })}
-            placeholder="e.g. 400001"
+            placeholder="e.g. 462001"
             maxLength={6}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
@@ -196,16 +253,53 @@ export default function NewComplaintPage() {
           )}
         </div>
 
-        {/* Image URL */}
+        {/* ✅ Image Upload — Naya Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (optional)</label>
-          <input
-            {...register('imageUrl')}
-            placeholder="https://..."
-            type="url"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <p className="text-xs text-gray-400 mt-1">Upload your image to Supabase Storage and paste the URL here</p>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Waste Ki Photo (optional)
+          </label>
+
+          {/* Image Preview */}
+          {imagePreview ? (
+            <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
+              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            // Upload Box
+            <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-400 hover:bg-gray-50 transition">
+              {uploadingImage ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+                  <p className="text-sm text-gray-500">Upload ho rahi hai...</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-gray-400" />
+                  <p className="text-sm text-gray-500">
+                    <span className="text-primary-600 font-medium">Click karein</span> ya photo drag karें
+                  </p>
+                  <p className="text-xs text-gray-400">PNG, JPG, JPEG — max 5MB</p>
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+                className="hidden"
+              />
+            </label>
+          )}
+
+          {/* Hidden field for imageUrl */}
+          <input type="hidden" {...register('imageUrl')} />
         </div>
 
         {/* Submit */}
@@ -219,7 +313,7 @@ export default function NewComplaintPage() {
           </button>
           <button
             type="submit"
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || uploadingImage}
             className="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-60"
           >
             {mutation.isPending ? 'Submitting...' : 'Submit Complaint'}

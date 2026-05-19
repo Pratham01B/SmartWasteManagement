@@ -1,2 +1,12 @@
+com\smartwaste\service\ComplaintServiceTest$GetComplaintById.class
+com\smartwaste\service\ComplaintServiceTest$AssignComplaint.class
+com\smartwaste\service\ComplaintServiceTest$GetAllComplaints.class
 com\smartwaste\exception\GlobalExceptionHandlerTest.class
 com\smartwaste\security\JwtServiceTest.class
+com\smartwaste\entity\ComplaintTest.class
+com\smartwaste\service\ComplaintServiceTest$GetComplaintsByCitizen.class
+com\smartwaste\service\ComplaintServiceTest$GetComplaintsByWorker.class
+com\smartwaste\repository\ComplaintRepositoryTest.class
+com\smartwaste\service\ComplaintServiceTest$CreateComplaint.class
+com\smartwaste\service\ComplaintServiceTest$UpdateStatus.class
+com\smartwaste\service\ComplaintServiceTest.class

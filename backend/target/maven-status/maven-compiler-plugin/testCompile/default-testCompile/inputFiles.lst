@@ -1,2 +1,5 @@
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\exception\GlobalExceptionHandlerTest.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\security\JwtServiceTest.java
+E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\entity\ComplaintTest.java
+E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\service\ComplaintServiceTest.java
+E:\Smart Waste Management\SmartWasteManagement\backend\src\test\java\com\smartwaste\repository\ComplaintRepositoryTest.java

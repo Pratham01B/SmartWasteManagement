@@ -7,7 +7,7 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -16,7 +16,6 @@
 
     /* Types */
     "typeRoots": ["./node_modules/@types"],
-    "types": ["react", "react-dom"],
 
     /* Linting */
     "strict": true,
