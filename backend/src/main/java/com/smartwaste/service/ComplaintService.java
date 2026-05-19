@@ -60,8 +60,9 @@ public class ComplaintService {
     /**
      * Get complaints filed by a specific citizen.
      */
+    @Transactional(readOnly = true)
     public Page<ComplaintResponse> getComplaintsByCitizen(User citizen, Pageable pageable) {
-        return complaintRepository.findByCitizen(citizen, pageable).map(ComplaintResponse::from);
+        return complaintRepository.findByCitizenIdWithUser(citizen.getId(), pageable).map(ComplaintResponse::from);
     }
 
     /**

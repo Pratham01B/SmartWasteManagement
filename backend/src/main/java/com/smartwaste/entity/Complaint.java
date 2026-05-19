@@ -26,12 +26,12 @@ public class Complaint {
     private Long id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "citizen_id", nullable = false)
     private User citizen;
 
     // Assigned worker (nullable until admin assigns)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "assigned_worker_id")
     private User assignedWorker;
 
