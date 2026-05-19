@@ -10,6 +10,8 @@ import RegisterPage from './pages/RegisterPage'
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminComplaintsPage from './pages/admin/AdminComplaintsPage'
+import AdminWorkersPage from './pages/admin/AdminWorkersPage'
+import AdminRoutesPage from './pages/admin/AdminRoutesPage'
 
 // Citizen pages
 import CitizenDashboard from './pages/citizen/CitizenDashboard'
@@ -62,8 +64,8 @@ export default function App() {
               <Routes>
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="complaints" element={<AdminComplaintsPage />} />
-                <Route path="workers" element={<Placeholder title="Worker Management" />} />
-                <Route path="routes" element={<Placeholder title="Route Optimizer" />} />
+                <Route path="workers" element={<AdminWorkersPage />} />
+                <Route path="routes" element={<AdminRoutesPage />} />
               </Routes>
             </Layout>
           </ProtectedRoute>

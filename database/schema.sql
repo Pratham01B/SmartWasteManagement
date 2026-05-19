@@ -124,3 +124,58 @@ VALUES (
     TRUE,
     TRUE
 ) ON CONFLICT (email) DO NOTHING;
+
+-- ============================================================
+-- MARKETPLACE LISTINGS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS marketplace_listings (
+    id               BIGSERIAL PRIMARY KEY,
+    seller_id        BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title            VARCHAR(150) NOT NULL,
+    description      TEXT,
+    material_type    VARCHAR(30)  NOT NULL CHECK (material_type IN ('PLASTIC','PAPER','METAL','GLASS','ELECTRONIC','RUBBER','TEXTILE','OTHER')),
+    quantity_kg      DOUBLE PRECISION NOT NULL CHECK (quantity_kg > 0),
+    price_per_kg     DOUBLE PRECISION NOT NULL CHECK (price_per_kg > 0),
+    city             VARCHAR(100),
+    pincode          VARCHAR(10),
+    image_url        TEXT,
+    status           VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE'
+                         CHECK (status IN ('ACTIVE','SOLD','EXPIRED','CANCELLED')),
+    created_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_marketplace_seller  ON marketplace_listings(seller_id);
+CREATE INDEX idx_marketplace_status  ON marketplace_listings(status);
+CREATE INDEX idx_marketplace_material ON marketplace_listings(material_type);
+
+CREATE TRIGGER trg_marketplace_updated_at
+    BEFORE UPDATE ON marketplace_listings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
+-- OTP TOKENS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS otp_tokens (
+    id         BIGSERIAL PRIMARY KEY,
+    email      VARCHAR(100) NOT NULL,
+    otp        VARCHAR(10)  NOT NULL,
+    expires_at TIMESTAMPTZ  NOT NULL,
+    used       BOOLEAN      NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX idx_otp_email ON otp_tokens(email);
+
+-- ============================================================
+-- PASSWORD RESET TOKENS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id         BIGSERIAL PRIMARY KEY,
+    token      TEXT         NOT NULL UNIQUE,
+    email      VARCHAR(100) NOT NULL,
+    expires_at TIMESTAMPTZ  NOT NULL,
+    used       BOOLEAN      NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX idx_prt_email ON password_reset_tokens(email);
+CREATE INDEX idx_prt_token ON password_reset_tokens(token);
