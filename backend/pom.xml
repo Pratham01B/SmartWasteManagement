@@ -74,6 +74,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- spring-dotenv — loads .env file into Spring Environment -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
