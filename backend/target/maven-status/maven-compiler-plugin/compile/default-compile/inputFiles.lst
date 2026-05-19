@@ -1,5 +1,6 @@
 E:\Smart Waste Management\SmartWasteManagement\backend\src\main\java\com\smartwaste\dto\complaint\ComplaintRequest.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\main\java\com\smartwaste\repository\ComplaintRepository.java
+E:\Smart Waste Management\SmartWasteManagement\backend\src\main\java\com\smartwaste\dto\auth\UserProfileResponse.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\main\java\com\smartwaste\entity\Complaint.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\main\java\com\smartwaste\service\AnalyticsService.java
 E:\Smart Waste Management\SmartWasteManagement\backend\src\main\java\com\smartwaste\dto\auth\RegisterRequest.java

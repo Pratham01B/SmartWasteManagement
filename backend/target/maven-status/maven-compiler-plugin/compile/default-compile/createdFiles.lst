@@ -1,5 +1,7 @@
 com\smartwaste\controller\AnalyticsController.class
 com\smartwaste\config\SecurityConfig.class
+com\smartwaste\dto\auth\UserProfileResponse$UserProfileResponseBuilder.class
+com\smartwaste\dto\auth\UserProfileResponse.class
 com\smartwaste\exception\EmailAlreadyExistsException.class
 com\smartwaste\exception\ResourceNotFoundException.class
 com\smartwaste\SmartWasteApplication.class
