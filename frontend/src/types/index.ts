@@ -81,3 +81,51 @@ export interface DashboardStats {
   wasteTypeBreakdown: Record<string, number>
   statusBreakdown: Record<string, number>
 }
+
+export interface Worker {
+  id: number
+  fullName: string
+  email: string
+  phoneNumber?: string
+  city?: string
+  pincode?: string
+  isActive: boolean
+}
+
+export type RouteStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+export interface CollectionRoute {
+  id: number
+  workerId: number
+  workerName: string
+  routeName: string
+  scheduledDate: string
+  areaName?: string
+  pincode?: string
+  estimatedDistanceKm?: number
+  estimatedDurationMin?: number
+  status: RouteStatus
+  startedAt?: string
+  completedAt?: string
+  createdAt: string
+}
+
+export type MaterialType = 'PLASTIC' | 'PAPER' | 'METAL' | 'GLASS' | 'ELECTRONIC' | 'RUBBER' | 'TEXTILE' | 'OTHER'
+export type ListingStatus = 'ACTIVE' | 'SOLD' | 'EXPIRED' | 'CANCELLED'
+
+export interface MarketplaceListing {
+  id: number
+  sellerId: number
+  sellerName: string
+  title: string
+  description?: string
+  materialType: MaterialType
+  quantityKg: number
+  pricePerKg: number
+  totalPrice: number
+  city?: string
+  pincode?: string
+  imageUrl?: string
+  status: ListingStatus
+  createdAt: string
+}

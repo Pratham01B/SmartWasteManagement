@@ -46,6 +46,7 @@ public class SecurityConfig {
 
                 // Admin only
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/workers/**").hasRole("ADMIN")
 
                 // Worker endpoints
                 .requestMatchers("/routes/**").hasAnyRole("ADMIN", "WORKER")
