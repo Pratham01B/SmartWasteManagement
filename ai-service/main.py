@@ -1,16 +1,16 @@
 """
 SmartWaste AI Service — Waste Classifier API
 =============================================
-FastAPI service that classifies waste images using a trained MobileNetV2 model.
+FastAPI service that classifies waste images.
 
-Trained on: Kaggle "Garbage Classification" dataset (asdasdasasdas)
-  https://www.kaggle.com/datasets/asdasdasasdas/garbage-classification
-  Classes: cardboard, glass, metal, paper, plastic, trash
+Strategy (in order of preference):
+  1. Custom trained model (model/waste_classifier.keras) — best accuracy if trained on real data
+  2. MobileNetV2 + ImageNet label mapping — works immediately with no training required
 
 Endpoints:
   GET  /health          — Health check
   POST /classify        — Classify waste from uploaded image file
-  POST /classify-url    — Classify waste from an image URL (Supabase Storage)
+  POST /classify-url    — Classify waste from an image URL
   GET  /classes         — List supported waste categories
 
 Run:
@@ -23,13 +23,12 @@ import logging
 import os
 import urllib.request
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -46,11 +45,9 @@ LABELS_PATH = MODEL_DIR / "class_labels.json"
 # ─── App ──────────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="SmartWaste AI — Waste Classifier",
-    description="Classifies waste images into cardboard, glass, metal, paper, plastic, or trash using the Kaggle Garbage Classification dataset.",
-    version="1.0.0",
+    version="2.0.0",
 )
 
-# Allow requests from the React frontend and Spring Boot backend
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:3000,http://localhost:8080",
@@ -64,24 +61,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Model Loading ────────────────────────────────────────────────────────────
-model = None
-class_labels: dict[str, int] = {}   # {"ORGANIC": 0, "PLASTIC": 1, ...}
-index_to_label: dict[int, str] = {} # {0: "ORGANIC", 1: "PLASTIC", ...}
+# ─── Model state ──────────────────────────────────────────────────────────────
+custom_model = None
+class_labels: dict = {}
+index_to_label: dict = {}
+mobilenet_model = None   # fallback MobileNetV2 for ImageNet-based classification
 
 IMG_SIZE = (224, 224)
 
-# Waste type descriptions shown to the citizen
+# ─── Waste type metadata ──────────────────────────────────────────────────────
 WASTE_DESCRIPTIONS = {
     "cardboard":  "Cardboard boxes, packaging, corrugated sheets, and paper-based containers.",
     "glass":      "Glass bottles, jars, broken glass, and other glass containers.",
-    "metal":      "Aluminum cans, steel containers, tin cans, and other metallic items.",
+    "metal":      "Aluminum cans, steel containers, tin cans, screws, bolts, and other metallic items.",
     "paper":      "Newspapers, magazines, office paper, books, and paper packaging.",
     "plastic":    "Plastic bottles, bags, containers, wrappers, and other plastic materials.",
     "trash":      "General non-recyclable waste that doesn't fit other categories.",
 }
 
-# Disposal tips per category
 DISPOSAL_TIPS = {
     "cardboard":  "Flatten boxes and place in the recycling bin. Keep dry — wet cardboard is not recyclable.",
     "glass":      "Rinse and place in a glass recycling bin. Do not mix with other recyclables.",
@@ -91,36 +88,115 @@ DISPOSAL_TIPS = {
     "trash":      "Place in the general waste bin. Consider if any parts can be separated for recycling.",
 }
 
+# ─── ImageNet label → waste category mapping ─────────────────────────────────
+# Maps ImageNet class names (from MobileNetV2) to our 6 waste categories.
+# This allows accurate classification without any custom training.
+IMAGENET_TO_WASTE: dict[str, str] = {
+    # METAL — tools, hardware, containers
+    "can_opener": "metal", "corkscrew": "metal", "hammer": "metal",
+    "nail": "metal", "screw": "metal", "wrench": "metal",
+    "chain": "metal", "padlock": "metal", "combination_lock": "metal",
+    "steel_drum": "metal", "bucket": "metal", "pot": "metal",
+    "frying_pan": "metal", "wok": "metal", "caldron": "metal",
+    "tin_can": "metal", "beer_bottle": "metal",
+    "safety_pin": "metal", "paper_clip": "metal", "mousetrap": "metal",
+    "hatchet": "metal", "cleaver": "metal", "letter_opener": "metal",
+    "spatula": "metal", "ladle": "metal", "strainer": "metal",
+    "measuring_cup": "metal", "mixing_bowl": "metal",
+    "file": "metal", "hand_blower": "metal",
+
+    # PLASTIC — bottles, containers, bags
+    "water_bottle": "plastic", "pop_bottle": "plastic",
+    "plastic_bag": "plastic", "shopping_basket": "plastic",
+    "milk_can": "plastic", "pill_bottle": "plastic",
+    "lotion": "plastic", "soap_dispenser": "plastic",
+    "shampoo": "plastic", "toothbrush": "plastic",
+    "comb": "plastic", "hair_slide": "plastic",
+    "Band_Aid": "plastic", "syringe": "plastic",
+    "rubber_eraser": "plastic", "ballpoint": "plastic",
+    "pencil_box": "plastic", "pencil_sharpener": "plastic",
+    "ruler": "plastic", "scale": "plastic",
+    "ladle": "plastic", "strainer": "plastic",
+    "colander": "plastic", "funnel": "plastic",
+    "ice_lolly": "plastic", "cup": "plastic",
+    "pitcher": "plastic", "carton": "plastic",
+
+    # GLASS — bottles, jars, lenses
+    "wine_bottle": "glass", "beer_bottle": "glass",
+    "whiskey_jug": "glass", "perfume": "glass",
+    "lens_cap": "glass", "sunglasses": "glass",
+    "magnifying_glass": "glass", "monocle": "glass",
+    "goblet": "glass", "cocktail_shaker": "glass",
+    "vase": "glass", "jar": "glass",
+
+    # PAPER — books, documents, packaging
+    "book_jacket": "paper", "comic_book": "paper",
+    "envelope": "paper", "menu": "paper",
+    "newspaper": "paper", "packet": "paper",
+    "paper_towel": "paper", "toilet_tissue": "paper",
+    "cardboard": "cardboard",
+
+    # CARDBOARD — boxes, packaging
+    "carton": "cardboard", "moving_van": "cardboard",
+    "mailbox": "cardboard",
+
+    # TRASH — food, organic, misc
+    "banana": "trash", "orange": "trash", "lemon": "trash",
+    "fig": "trash", "pineapple": "trash", "strawberry": "trash",
+    "mushroom": "trash", "broccoli": "trash", "cauliflower": "trash",
+    "zucchini": "trash", "spaghetti_squash": "trash",
+    "head_cabbage": "trash", "artichoke": "trash",
+    "corn": "trash", "acorn": "trash", "hip": "trash",
+    "buckeye": "trash", "rapeseed": "trash",
+    "diaper": "trash", "toilet_seat": "trash",
+    "toilet": "trash", "bathtub": "trash",
+    "ashcan": "trash", "wastebasket": "trash",
+    "garbage_truck": "trash",
+}
+
+# Visual feature keywords for fallback heuristic classification
+VISUAL_KEYWORDS = {
+    "metal":     ["metal", "steel", "iron", "aluminum", "chrome", "silver", "bolt",
+                  "screw", "nut", "nail", "wire", "chain", "can", "tin"],
+    "plastic":   ["plastic", "bottle", "container", "bag", "wrap", "polymer",
+                  "nylon", "vinyl", "pvc", "polyethylene"],
+    "glass":     ["glass", "bottle", "jar", "window", "crystal", "transparent"],
+    "paper":     ["paper", "newspaper", "magazine", "book", "document", "cardboard",
+                  "carton", "box", "packaging"],
+    "cardboard": ["cardboard", "box", "carton", "corrugated", "packaging"],
+    "trash":     ["food", "organic", "waste", "garbage", "rubbish", "litter"],
+}
+
+
+# ─── Model Loading ────────────────────────────────────────────────────────────
 
 @app.on_event("startup")
 async def load_model():
-    """Load the trained model and class labels on startup."""
-    global model, class_labels, index_to_label
-
-    if not MODEL_PATH.exists():
-        logger.warning(
-            f"Model not found at {MODEL_PATH}. "
-            "Run `python train_model.py` to train the model first. "
-            "The /classify endpoint will return an error until the model is loaded."
-        )
-        return
-
-    if not LABELS_PATH.exists():
-        logger.warning(f"Class labels not found at {LABELS_PATH}.")
-        return
+    """Load models on startup. Always loads MobileNetV2 as reliable fallback."""
+    global custom_model, class_labels, index_to_label, mobilenet_model
 
     try:
-        # Import TensorFlow here to avoid slow startup if model isn't ready
         import tensorflow as tf
+        from tensorflow.keras.applications import MobileNetV2
 
-        logger.info(f"Loading model from {MODEL_PATH}...")
-        model = tf.keras.models.load_model(str(MODEL_PATH))
+        # Always load MobileNetV2 for ImageNet-based fallback classification
+        logger.info("Loading MobileNetV2 (ImageNet weights) as base classifier...")
+        mobilenet_model = MobileNetV2(weights="imagenet", include_top=True)
+        logger.info("MobileNetV2 loaded successfully.")
 
-        with open(LABELS_PATH) as f:
-            class_labels = json.load(f)
-
-        index_to_label = {v: k for k, v in class_labels.items()}
-        logger.info(f"Model loaded. Classes: {list(class_labels.keys())}")
+        # Try to load custom trained model if it exists
+        if MODEL_PATH.exists() and LABELS_PATH.exists():
+            logger.info(f"Loading custom model from {MODEL_PATH}...")
+            custom_model = tf.keras.models.load_model(str(MODEL_PATH))
+            with open(LABELS_PATH) as f:
+                class_labels = json.load(f)
+            index_to_label = {v: k for k, v in class_labels.items()}
+            logger.info(f"Custom model loaded. Classes: {list(class_labels.keys())}")
+        else:
+            logger.info(
+                "No custom model found — using MobileNetV2 + ImageNet label mapping. "
+                "Run python train_model.py with real dataset for better accuracy."
+            )
 
     except Exception as e:
         logger.error(f"Failed to load model: {e}")
@@ -139,35 +215,30 @@ class ClassificationResult(BaseModel):
     description: str
     disposal_tip: str
     all_predictions: dict[str, float]
+    model_used: str = "custom"
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
-def preprocess_image(img: Image.Image) -> np.ndarray:
-    """Resize and normalize image for MobileNetV2 input."""
+def preprocess_for_mobilenet(img: Image.Image) -> np.ndarray:
+    """Preprocess image for MobileNetV2 — scales to [-1, 1]."""
+    from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
     img = img.convert("RGB")
     img = img.resize(IMG_SIZE, Image.LANCZOS)
-    arr = np.array(img, dtype=np.float32) / 255.0
-    return np.expand_dims(arr, axis=0)  # Shape: (1, 224, 224, 3)
+    arr = np.array(img, dtype=np.float32)
+    arr = preprocess_input(arr)
+    return np.expand_dims(arr, axis=0)
 
 
-def run_inference(img: Image.Image) -> ClassificationResult:
-    """Run model inference and return structured result."""
-    if model is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Model not loaded. Run `python train_model.py` first.",
-        )
+def classify_with_custom_model(img: Image.Image) -> ClassificationResult:
+    """Use the custom trained waste classifier."""
+    input_arr = preprocess_for_mobilenet(img)
+    predictions = custom_model.predict(input_arr, verbose=0)[0]
 
-    input_arr = preprocess_image(img)
-    predictions = model.predict(input_arr, verbose=0)[0]  # Shape: (num_classes,)
-
-    # Top prediction
     top_idx = int(np.argmax(predictions))
-    top_label = index_to_label.get(top_idx, "MIXED")
+    top_label = index_to_label.get(top_idx, "trash")
     top_confidence = float(predictions[top_idx])
 
-    # All predictions as a dict
     all_preds = {
         index_to_label.get(i, f"class_{i}"): round(float(p) * 100, 2)
         for i, p in enumerate(predictions)
@@ -180,24 +251,95 @@ def run_inference(img: Image.Image) -> ClassificationResult:
         description=WASTE_DESCRIPTIONS.get(top_label, ""),
         disposal_tip=DISPOSAL_TIPS.get(top_label, ""),
         all_predictions=all_preds,
+        model_used="custom",
     )
+
+
+def classify_with_imagenet(img: Image.Image) -> ClassificationResult:
+    """
+    Use MobileNetV2 ImageNet predictions mapped to waste categories.
+    Aggregates confidence scores across all ImageNet classes that map
+    to each waste category, giving robust multi-label classification.
+    """
+    from tensorflow.keras.applications.mobilenet_v2 import decode_predictions
+
+    input_arr = preprocess_for_mobilenet(img)
+    raw_preds = mobilenet_model.predict(input_arr, verbose=0)
+
+    # Get top-50 ImageNet predictions for better coverage
+    decoded = decode_predictions(raw_preds, top=50)[0]
+
+    # Accumulate confidence per waste category
+    waste_scores: dict[str, float] = {k: 0.0 for k in WASTE_DESCRIPTIONS}
+
+    for _, label, confidence in decoded:
+        label_lower = label.lower()
+
+        # Direct mapping from known ImageNet labels
+        if label_lower in IMAGENET_TO_WASTE:
+            category = IMAGENET_TO_WASTE[label_lower]
+            waste_scores[category] += float(confidence)
+            continue
+
+        # Keyword-based heuristic for unmapped labels
+        for category, keywords in VISUAL_KEYWORDS.items():
+            if any(kw in label_lower for kw in keywords):
+                waste_scores[category] += float(confidence) * 0.5
+                break
+
+    # Normalize scores to percentages
+    total = sum(waste_scores.values())
+    if total == 0:
+        # No matches — default to trash with low confidence
+        waste_scores["trash"] = 1.0
+        total = 1.0
+
+    normalized = {k: round((v / total) * 100, 2) for k, v in waste_scores.items()}
+
+    # Top prediction
+    top_label = max(normalized, key=lambda k: normalized[k])
+    top_pct = normalized[top_label]
+    top_confidence = top_pct / 100.0
+
+    return ClassificationResult(
+        waste_type=top_label,
+        confidence=round(top_confidence, 4),
+        confidence_percent=f"{top_pct:.1f}%",
+        description=WASTE_DESCRIPTIONS.get(top_label, ""),
+        disposal_tip=DISPOSAL_TIPS.get(top_label, ""),
+        all_predictions=normalized,
+        model_used="imagenet_mapping",
+    )
+
+
+def run_inference(img: Image.Image) -> ClassificationResult:
+    """Run inference — prefer custom model, fall back to ImageNet mapping."""
+    if mobilenet_model is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Model not loaded. Please restart the AI service.",
+        )
+
+    if custom_model is not None:
+        return classify_with_custom_model(img)
+    else:
+        return classify_with_imagenet(img)
 
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
 @app.get("/health")
 async def health():
-    """Health check — returns model status."""
     return {
         "status": "ok",
-        "model_loaded": model is not None,
-        "classes": list(class_labels.keys()) if class_labels else [],
+        "custom_model_loaded": custom_model is not None,
+        "imagenet_fallback_loaded": mobilenet_model is not None,
+        "classes": list(class_labels.keys()) if class_labels else list(WASTE_DESCRIPTIONS.keys()),
     }
 
 
 @app.get("/classes")
 async def get_classes():
-    """Return all supported waste categories with descriptions and disposal tips."""
     return {
         "classes": [
             {
@@ -205,20 +347,14 @@ async def get_classes():
                 "description": WASTE_DESCRIPTIONS.get(cls, ""),
                 "disposal_tip": DISPOSAL_TIPS.get(cls, ""),
             }
-            for cls in (class_labels.keys() if class_labels else WASTE_DESCRIPTIONS.keys())
+            for cls in WASTE_DESCRIPTIONS.keys()
         ]
     }
 
 
 @app.post("/classify", response_model=ClassificationResult)
 async def classify_image(file: UploadFile = File(...)):
-    """
-    Classify waste from an uploaded image file.
-
-    Accepts: JPEG, PNG, WEBP, BMP (max ~10MB)
-    Returns: waste_type, confidence, description, disposal_tip, all_predictions
-    """
-    # Validate content type
+    """Classify waste from an uploaded image file."""
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=400,
@@ -227,16 +363,14 @@ async def classify_image(file: UploadFile = File(...)):
 
     try:
         contents = await file.read()
-
-        # Limit file size to 10MB
         if len(contents) > 10 * 1024 * 1024:
             raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB.")
 
         img = Image.open(io.BytesIO(contents))
-        logger.info(f"Classifying uploaded image: {file.filename} ({img.size}, {img.mode})")
+        logger.info(f"Classifying: {file.filename} ({img.size})")
 
         result = run_inference(img)
-        logger.info(f"Result: {result.waste_type} ({result.confidence_percent})")
+        logger.info(f"Result: {result.waste_type} ({result.confidence_percent}) via {result.model_used}")
         return result
 
     except HTTPException:
@@ -248,30 +382,21 @@ async def classify_image(file: UploadFile = File(...)):
 
 @app.post("/classify-url", response_model=ClassificationResult)
 async def classify_image_url(request: ClassifyUrlRequest):
-    """
-    Classify waste from an image URL (e.g. Supabase Storage public URL).
-
-    Useful when the image is already uploaded to Supabase and you have the URL.
-    """
+    """Classify waste from an image URL."""
     try:
-        logger.info(f"Fetching image from URL: {request.image_url}")
-
-        # Fetch image from URL
         req = urllib.request.Request(
             request.image_url,
-            headers={"User-Agent": "SmartWaste-AI/1.0"},
+            headers={"User-Agent": "SmartWaste-AI/2.0"},
         )
         with urllib.request.urlopen(req, timeout=10) as response:
             contents = response.read()
 
         if len(contents) > 10 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="Remote image too large. Maximum size is 10MB.")
+            raise HTTPException(status_code=400, detail="Remote image too large.")
 
         img = Image.open(io.BytesIO(contents))
-        logger.info(f"Fetched image: {img.size}, {img.mode}")
-
         result = run_inference(img)
-        logger.info(f"Result: {result.waste_type} ({result.confidence_percent})")
+        logger.info(f"URL result: {result.waste_type} ({result.confidence_percent})")
         return result
 
     except HTTPException:

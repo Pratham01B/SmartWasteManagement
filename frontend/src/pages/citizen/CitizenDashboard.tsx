@@ -1,10 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-<<<<<<< HEAD
-import { AlertCircle, CheckCircle, Clock, Plus, Star, ChevronRight } from 'lucide-react'
-=======
 import { AlertCircle, CheckCircle, Clock, Plus, Star, ChevronRight, Recycle } from 'lucide-react'
->>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
 import { complaintsApi } from '../../api/complaints'
 import { authApi } from '../../api/auth'
 import { useAuthStore } from '../../store/authStore'
@@ -33,9 +29,10 @@ export default function CitizenDashboard() {
 
   const complaints = data?.content ?? []
   const pending = complaints.filter((c: Complaint) => c.status === 'PENDING').length
-  const inProgress = complaints.filter((c: Complaint) => ['ASSIGNED', 'IN_PROGRESS'].includes(c.status)).length
+  const inProgress = complaints.filter((c: Complaint) =>
+    ['ASSIGNED', 'IN_PROGRESS'].includes(c.status)
+  ).length
   const resolved = complaints.filter((c: Complaint) => c.status === 'RESOLVED').length
-  // Points that will be earned once active complaints are resolved
   const pendingPoints = (pending + inProgress) * 10
 
   return (
@@ -43,8 +40,12 @@ export default function CitizenDashboard() {
       {/* Welcome */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Welcome, {user?.fullName?.split(' ')[0]} 👋</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Track your complaints and earn reward points</p>
+          <h1 className="text-xl font-bold text-gray-800">
+            Welcome, {user?.fullName?.split(' ')[0]} 👋
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Track your complaints and earn reward points
+          </p>
         </div>
         <Link
           to="/citizen/complaints/new"
@@ -55,7 +56,7 @@ export default function CitizenDashboard() {
         </Link>
       </div>
 
-      {/* Reward points banner — links to full rewards page */}
+      {/* Reward points banner */}
       <Link
         to="/citizen/rewards"
         className="block bg-gradient-to-r from-amber-400 to-orange-400 rounded-xl p-5 text-white hover:opacity-95 transition"
@@ -82,12 +83,7 @@ export default function CitizenDashboard() {
         </div>
       </Link>
 
-<<<<<<< HEAD
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-2">
-=======
-      {/* Waste Classifier quick-access card */}
+      {/* AI Waste Classifier quick-access */}
       <Link
         to="/citizen/classify"
         className="block bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-5 text-white hover:opacity-95 transition"
@@ -96,7 +92,9 @@ export default function CitizenDashboard() {
           <div>
             <p className="text-sm font-medium opacity-90">AI Waste Classifier</p>
             <p className="text-lg font-bold mt-0.5">Identify your waste type</p>
-            <p className="text-xs opacity-80 mt-1">Upload a photo — our AI tells you how to dispose it</p>
+            <p className="text-xs opacity-80 mt-1">
+              Upload a photo — our AI tells you how to dispose it
+            </p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <Recycle className="w-12 h-12 opacity-20" />
@@ -108,8 +106,8 @@ export default function CitizenDashboard() {
       </Link>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-2">
->>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-2">
           <div className="bg-yellow-50 w-9 h-9 rounded-lg flex items-center justify-center">
             <Clock className="text-yellow-600 w-5 h-5" />
           </div>
@@ -136,7 +134,9 @@ export default function CitizenDashboard() {
       <div className="bg-white rounded-xl shadow-sm">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-700">Recent Complaints</h2>
-          <Link to="/citizen/complaints" className="text-sm text-primary-600 hover:underline">View all</Link>
+          <Link to="/citizen/complaints" className="text-sm text-primary-600 hover:underline">
+            View all
+          </Link>
         </div>
 
         {isLoading ? (
@@ -151,7 +151,10 @@ export default function CitizenDashboard() {
         ) : (
           <ul className="divide-y divide-gray-50">
             {complaints.slice(0, 5).map((c: Complaint) => (
-              <li key={c.id} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition">
+              <li
+                key={c.id}
+                className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition"
+              >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-800 truncate">{c.title}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{c.address}</p>

@@ -35,6 +35,7 @@ from pathlib import Path
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from sklearn.metrics import classification_report
@@ -67,8 +68,10 @@ def build_data_generators():
     (with a fixed seed) to approximate a held-out test set.
     """
     # Training + validation generators (augmented)
+    # MobileNetV2 requires preprocess_input (scales [0,255] → [-1,1]),
+    # NOT the naive rescale=1/255 which gives [0,1] and causes misclassification.
     train_datagen = ImageDataGenerator(
-        rescale=1.0 / 255,
+        preprocessing_function=preprocess_input,
         rotation_range=20,
         width_shift_range=0.15,
         height_shift_range=0.15,
@@ -80,10 +83,10 @@ def build_data_generators():
         validation_split=VAL_SPLIT,
     )
 
-    # Test generator — no augmentation, just rescale
+    # Test generator — no augmentation, just MobileNetV2 preprocessing
     test_datagen = ImageDataGenerator(
-        rescale=1.0 / 255,
-        validation_split=TEST_SPLIT,   # reuse split mechanism for test slice
+        preprocessing_function=preprocess_input,
+        validation_split=TEST_SPLIT,
     )
 
     train_gen = train_datagen.flow_from_directory(

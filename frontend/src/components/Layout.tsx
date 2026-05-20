@@ -18,10 +18,8 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { label: 'Dashboard', path: '/citizen/dashboard' },
     { label: 'My Complaints', path: '/citizen/complaints' },
     { label: 'File Complaint', path: '/citizen/complaints/new' },
-<<<<<<< HEAD
-=======
+
     { label: 'Classify Waste', path: '/citizen/classify' },
->>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
     { label: 'Rewards', path: '/citizen/rewards' },
   ],
   WORKER: [

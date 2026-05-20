@@ -11,15 +11,11 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-<<<<<<< HEAD
-=======
-      // Proxy to Python AI service
       '/ai': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ai/, ''),
       },
->>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
     },
   },
 })
