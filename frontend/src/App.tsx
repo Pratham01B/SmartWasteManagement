@@ -18,6 +18,10 @@ import CitizenDashboard from './pages/citizen/CitizenDashboard'
 import CitizenComplaintsPage from './pages/citizen/CitizenComplaintsPage'
 import NewComplaintPage from './pages/citizen/NewComplaintPage'
 import RewardsDashboard from './pages/citizen/RewardsDashboard'
+<<<<<<< HEAD
+=======
+import WasteClassifierPage from './pages/citizen/WasteClassifierPage'
+>>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
 
 // Worker pages
 import WorkerDashboard from './pages/worker/WorkerDashboard'
@@ -84,6 +88,10 @@ export default function App() {
                 <Route path="complaints" element={<CitizenComplaintsPage />} />
                 <Route path="complaints/new" element={<NewComplaintPage />} />
                 <Route path="rewards" element={<RewardsDashboard />} />
+<<<<<<< HEAD
+=======
+                <Route path="classify" element={<WasteClassifierPage />} />
+>>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
               </Routes>
             </Layout>
           </ProtectedRoute>

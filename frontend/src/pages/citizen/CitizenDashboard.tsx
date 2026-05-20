@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+<<<<<<< HEAD
 import { AlertCircle, CheckCircle, Clock, Plus, Star, ChevronRight } from 'lucide-react'
+=======
+import { AlertCircle, CheckCircle, Clock, Plus, Star, ChevronRight, Recycle } from 'lucide-react'
+>>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
 import { complaintsApi } from '../../api/complaints'
 import { authApi } from '../../api/auth'
 import { useAuthStore } from '../../store/authStore'
@@ -78,9 +82,34 @@ export default function CitizenDashboard() {
         </div>
       </Link>
 
+<<<<<<< HEAD
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-2">
+=======
+      {/* Waste Classifier quick-access card */}
+      <Link
+        to="/citizen/classify"
+        className="block bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-5 text-white hover:opacity-95 transition"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium opacity-90">AI Waste Classifier</p>
+            <p className="text-lg font-bold mt-0.5">Identify your waste type</p>
+            <p className="text-xs opacity-80 mt-1">Upload a photo — our AI tells you how to dispose it</p>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <Recycle className="w-12 h-12 opacity-20" />
+            <span className="flex items-center gap-1 text-xs font-medium opacity-80">
+              Try it now <ChevronRight className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+      </Link>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-2">
+>>>>>>> 4ff527895e680a04d3860a9e3bcd1e7c9aba6340
           <div className="bg-yellow-50 w-9 h-9 rounded-lg flex items-center justify-center">
             <Clock className="text-yellow-600 w-5 h-5" />
           </div>
